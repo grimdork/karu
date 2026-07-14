@@ -108,7 +108,9 @@ func scanPost(scanner interface{ Scan(...interface{}) error }) (*Post, error) {
 	}
 
 	if ps.Metadata != "" {
-		_ = json.Unmarshal([]byte(ps.Metadata), &p.Metadata)
+		if err := json.Unmarshal([]byte(ps.Metadata), &p.Metadata); err != nil {
+			return nil, fmt.Errorf("parsing metadata: %w", err)
+		}
 	}
 
 	return p, nil
