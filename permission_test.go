@@ -205,9 +205,6 @@ func TestMultiplePermissionGroupsSamePath(t *testing.T) {
 
 func TestZeroValuePermissions(t *testing.T) {
 	var p Permissions
-	if p == nil {
-		t.Log("zero value Permissions is nil, should not panic on Has")
-	}
 	result := p.Has("any", 'r')
 	if result {
 		t.Error("nil permissions should give no access")
