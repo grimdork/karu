@@ -1,6 +1,6 @@
 # Kāru
 
-A Go library for forum and comment system logic, agnostic of the consuming application.
+A Go package for forum and comment system logic, agnostic of the consuming application.
 
 ## Features
 
