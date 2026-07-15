@@ -53,10 +53,6 @@ func (k *Karu) Close() error {
 	return k.db.Close()
 }
 
-func (k *Karu) DB() *sql.DB {
-	return k.db
-}
-
 func (k *Karu) escapeLike(s string) string {
 	s = strings.ReplaceAll(s, "\\", "\\\\")
 	s = strings.ReplaceAll(s, "%", "\\%")
@@ -129,6 +125,21 @@ func validatePath(path string) error {
 	path = strings.TrimSpace(path)
 	if path == "" || strings.HasPrefix(path, "/") || strings.HasSuffix(path, "/") {
 		return fmt.Errorf("%w: must be non-empty with no leading or trailing slashes", ErrInvalidPath)
+	}
+	if len(path) > MaxPathLength {
+		return fmt.Errorf("%w: path too long (max %d bytes)", ErrInvalidPath, MaxPathLength)
+	}
+	for _, part := range strings.Split(path, "/") {
+		if part == ".." {
+			return fmt.Errorf("%w: path must not contain '..' segments", ErrInvalidPath)
+		}
+	}
+	return nil
+}
+
+func validateLength(field, value string, max int) error {
+	if len(value) > max {
+		return fmt.Errorf("%s too long: max %d bytes", field, max)
 	}
 	return nil
 }

@@ -11,6 +11,15 @@ func (k *Karu) CreateThread(ctx context.Context, path, authorID, title, content,
 	if err := validatePath(path); err != nil {
 		return nil, err
 	}
+	if err := validateLength("author_id", authorID, MaxAuthorLength); err != nil {
+		return nil, err
+	}
+	if err := validateLength("title", title, MaxTitleLength); err != nil {
+		return nil, err
+	}
+	if err := validateLength("content", content, MaxContentLength); err != nil {
+		return nil, err
+	}
 
 	perms, err := ParsePermissions(permString)
 	if err != nil {
@@ -44,6 +53,13 @@ func (k *Karu) CreateThread(ctx context.Context, path, authorID, title, content,
 }
 
 func (k *Karu) CreatePost(ctx context.Context, parentID, authorID, content, permString string) (*Post, error) {
+	if err := validateLength("author_id", authorID, MaxAuthorLength); err != nil {
+		return nil, err
+	}
+	if err := validateLength("content", content, MaxContentLength); err != nil {
+		return nil, err
+	}
+
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return nil, err

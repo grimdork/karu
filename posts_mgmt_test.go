@@ -15,7 +15,7 @@ func TestCreateReplyLockedThread(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = k.LockThread(ctx, root.ID, "user1", "general:rwDtlm")
+	err = k.LockThread(ctx, root.ID, "general:rwDtlm")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestCreateReplyLockedThread(t *testing.T) {
 		t.Fatalf("expected ErrThreadLocked, got %v", err)
 	}
 
-	err = k.UnlockThread(ctx, root.ID, "user1", "general:rwDtlm")
+	err = k.UnlockThread(ctx, root.ID, "general:rwDtlm")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,12 +42,12 @@ func TestLockUnlock(t *testing.T) {
 
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwd")
 
-	err := k.LockThread(ctx, root.ID, "user1", "general:rwd")
+	err := k.LockThread(ctx, root.ID, "general:rwd")
 	if err == nil {
 		t.Fatal("expected permission error without 'l'")
 	}
 
-	err = k.LockThread(ctx, root.ID, "mod1", "general:rwdDtl")
+	err = k.LockThread(ctx, root.ID, "general:rwdDtl")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestLockUnlock(t *testing.T) {
 		t.Fatal("expected thread to be locked")
 	}
 
-	err = k.UnlockThread(ctx, root.ID, "mod1", "general:rwdDtl")
+	err = k.UnlockThread(ctx, root.ID, "general:rwdDtl")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestLockThreadWithoutLPermission(t *testing.T) {
 
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rw")
 
-	err := k.LockThread(ctx, root.ID, "user1", "general:rw")
+	err := k.LockThread(ctx, root.ID, "general:rw")
 	if err == nil {
 		t.Fatal("expected error for locking without 'l'")
 	}
@@ -86,9 +86,9 @@ func TestUnlockThreadWithoutLPermission(t *testing.T) {
 
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwdDtl")
 
-	k.LockThread(ctx, root.ID, "user1", "general:rwdDtl")
+	k.LockThread(ctx, root.ID, "general:rwdDtl")
 
-	err := k.UnlockThread(ctx, root.ID, "user1", "general:rwd")
+	err := k.UnlockThread(ctx, root.ID, "general:rwd")
 	if err == nil {
 		t.Fatal("expected error for unlocking without 'l' in perms")
 	}
@@ -98,7 +98,7 @@ func TestLockNonExistentThread(t *testing.T) {
 	k := setupDB(t)
 	ctx := context.Background()
 
-	err := k.LockThread(ctx, "no-such-id", "mod1", "general:rwdDtl")
+	err := k.LockThread(ctx, "no-such-id", "general:rwdDtl")
 	if !errors.Is(err, ErrPostNotFound) {
 		t.Fatalf("expected ErrPostNotFound, got %v", err)
 	}
@@ -111,7 +111,7 @@ func TestMoveThread(t *testing.T) {
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwd")
 	reply, _ := k.CreatePost(ctx, root.ID, "user2", "R", "general:rwd")
 
-	err := k.MoveThread(ctx, root.ID, "other", "user1", "general:m")
+	err := k.MoveThread(ctx, root.ID, "other", "general:m")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +135,7 @@ func TestMoveThreadWithoutPermission(t *testing.T) {
 	ctx := context.Background()
 
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwd")
-	err := k.MoveThread(ctx, root.ID, "other", "user1", "general:rw")
+	err := k.MoveThread(ctx, root.ID, "other", "general:rw")
 	if err == nil {
 		t.Fatal("expected error for moving without 'm'")
 	}
@@ -148,7 +148,7 @@ func TestMoveThreadNonRoot(t *testing.T) {
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwd")
 	reply, _ := k.CreatePost(ctx, root.ID, "user2", "R", "general:rwd")
 
-	err := k.MoveThread(ctx, reply.ID, "other", "user1", "general:m")
+	err := k.MoveThread(ctx, reply.ID, "other", "general:m")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestMovePost(t *testing.T) {
 
 	reply, _ := k.CreatePost(ctx, root1.ID, "user2", "Moving this", "general:rwd")
 
-	err := k.MovePost(ctx, reply.ID, root2.ID, "mod1", "general:mw")
+	err := k.MovePost(ctx, reply.ID, root2.ID, "general:mw")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,7 +199,7 @@ func TestMovePostWithoutPermission(t *testing.T) {
 	root2, _ := k.CreateThread(ctx, "general", "user1", "T2", "B2", "general:rwd")
 	reply, _ := k.CreatePost(ctx, root1.ID, "user2", "Moving", "general:rwd")
 
-	err := k.MovePost(ctx, reply.ID, root2.ID, "user1", "general:rw")
+	err := k.MovePost(ctx, reply.ID, root2.ID, "general:rw")
 	if err == nil {
 		t.Fatal("expected error for moving without 'm'")
 	}
@@ -212,7 +212,7 @@ func TestMovePostToNonExistentParent(t *testing.T) {
 	root, _ := k.CreateThread(ctx, "general", "user1", "T", "B", "general:rwd")
 	reply, _ := k.CreatePost(ctx, root.ID, "user2", "Moving", "general:rwd")
 
-	err := k.MovePost(ctx, reply.ID, "no-such-id", "mod1", "general:mw")
+	err := k.MovePost(ctx, reply.ID, "no-such-id", "general:mw")
 	if !errors.Is(err, ErrInvalidParent) && !errors.Is(err, ErrPostNotFound) {
 		t.Fatalf("expected ErrInvalidParent or ErrPostNotFound, got %v", err)
 	}

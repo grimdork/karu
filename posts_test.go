@@ -370,7 +370,6 @@ func TestDeepNestedReplies(t *testing.T) {
 		t.Fatal("c should have 1 child (d)")
 	}
 
-	_ = b
 }
 
 func TestInvalidPath(t *testing.T) {
@@ -521,13 +520,4 @@ func TestClose(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestDBMethod(t *testing.T) {
-	k := setupDB(t)
-	db := k.DB()
-	if db == nil {
-		t.Fatal("DB() returned nil")
-	}
-	db.Stats()
 }

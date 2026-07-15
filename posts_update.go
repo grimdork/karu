@@ -7,6 +7,13 @@ import (
 )
 
 func (k *Karu) UpdatePost(ctx context.Context, postID, authorID, title, content, permString string) error {
+	if err := validateLength("title", title, MaxTitleLength); err != nil {
+		return err
+	}
+	if err := validateLength("content", content, MaxContentLength); err != nil {
+		return err
+	}
+
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err

@@ -30,8 +30,14 @@ type SearchOptions struct {
 	ExcludedPaths []string
 }
 
-const DefaultPageSize = 25
-const MaxPageSize = 100
+const (
+	DefaultPageSize  = 25
+	MaxPageSize      = 100
+	MaxTitleLength   = 500
+	MaxContentLength = 100000
+	MaxPathLength    = 255
+	MaxAuthorLength  = 255
+)
 
 func (o *ListOptions) clamp() {
 	if o.Limit <= 0 || o.Limit > MaxPageSize {

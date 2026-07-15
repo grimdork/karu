@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func (k *Karu) LockThread(ctx context.Context, postID, authorID, permString string) error {
+func (k *Karu) LockThread(ctx context.Context, postID, permString string) error {
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (k *Karu) LockThread(ctx context.Context, postID, authorID, permString stri
 	return nil
 }
 
-func (k *Karu) UnlockThread(ctx context.Context, postID, authorID, permString string) error {
+func (k *Karu) UnlockThread(ctx context.Context, postID, permString string) error {
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (k *Karu) UnlockThread(ctx context.Context, postID, authorID, permString st
 	return nil
 }
 
-func (k *Karu) StickyThread(ctx context.Context, postID, authorID, permString string) error {
+func (k *Karu) StickyThread(ctx context.Context, postID, permString string) error {
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (k *Karu) StickyThread(ctx context.Context, postID, authorID, permString st
 	return nil
 }
 
-func (k *Karu) UnstickyThread(ctx context.Context, postID, authorID, permString string) error {
+func (k *Karu) UnstickyThread(ctx context.Context, postID, permString string) error {
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func (k *Karu) UnstickyThread(ctx context.Context, postID, authorID, permString 
 	return nil
 }
 
-func (k *Karu) MoveThread(ctx context.Context, postID, newPath, authorID, permString string) error {
+func (k *Karu) MoveThread(ctx context.Context, postID, newPath, permString string) error {
 	if err := validatePath(newPath); err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (k *Karu) MoveThread(ctx context.Context, postID, newPath, authorID, permSt
 	return nil
 }
 
-func (k *Karu) MovePost(ctx context.Context, postID, newParentID, authorID, permString string) error {
+func (k *Karu) MovePost(ctx context.Context, postID, newParentID, permString string) error {
 	perms, err := ParsePermissions(permString)
 	if err != nil {
 		return err
@@ -188,6 +188,26 @@ func (k *Karu) MovePost(ctx context.Context, postID, newParentID, authorID, perm
 
 	if !perms.Has(newParent.Path, 'w') {
 		return &PermissionError{Path: newParent.Path, Code: 'w'}
+	}
+
+	if postID == newParentID {
+		return fmt.Errorf("cannot reparent a post to itself")
+	}
+
+	var descendantCount int
+	err = k.db.QueryRowContext(ctx,
+		`WITH RECURSIVE descendants AS (
+			SELECT id FROM posts WHERE parent_id = $1
+			UNION ALL
+			SELECT p.id FROM posts p JOIN descendants d ON p.parent_id = d.id
+		)
+		SELECT COUNT(*) FROM descendants WHERE id = $2`,
+		postID, newParentID).Scan(&descendantCount)
+	if err != nil {
+		return fmt.Errorf("checking for cycles: %w", err)
+	}
+	if descendantCount > 0 {
+		return fmt.Errorf("cannot reparent to a descendant post")
 	}
 
 	now := k.nowMilli()

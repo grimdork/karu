@@ -7,7 +7,6 @@ import (
 
 var (
 	ErrPostNotFound      = errors.New("post not found")
-	ErrThreadNotFound    = errors.New("thread not found")
 	ErrPermissionDenied  = errors.New("permission denied")
 	ErrThreadLocked      = errors.New("thread is locked")
 	ErrInvalidPermission = errors.New("invalid permission string")

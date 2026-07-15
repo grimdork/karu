@@ -7,6 +7,12 @@ import (
 )
 
 func (k *Karu) GetPreference(ctx context.Context, userID, key string) (string, error) {
+	if err := validateLength("user_id", userID, MaxAuthorLength); err != nil {
+		return "", err
+	}
+	if err := validateLength("key", key, MaxPathLength); err != nil {
+		return "", err
+	}
 	var value string
 	err := k.db.QueryRowContext(ctx,
 		`SELECT value FROM preferences WHERE user_id = $1 AND key = $2`,
@@ -21,6 +27,15 @@ func (k *Karu) GetPreference(ctx context.Context, userID, key string) (string, e
 }
 
 func (k *Karu) SetPreference(ctx context.Context, userID, key, value string) error {
+	if err := validateLength("user_id", userID, MaxAuthorLength); err != nil {
+		return err
+	}
+	if err := validateLength("key", key, MaxPathLength); err != nil {
+		return err
+	}
+	if err := validateLength("value", value, MaxContentLength); err != nil {
+		return err
+	}
 	_, err := k.db.ExecContext(ctx,
 		`INSERT INTO preferences (user_id, key, value)
 		 VALUES ($1, $2, $3)
@@ -33,6 +48,12 @@ func (k *Karu) SetPreference(ctx context.Context, userID, key, value string) err
 }
 
 func (k *Karu) DeletePreference(ctx context.Context, userID, key string) error {
+	if err := validateLength("user_id", userID, MaxAuthorLength); err != nil {
+		return err
+	}
+	if err := validateLength("key", key, MaxPathLength); err != nil {
+		return err
+	}
 	_, err := k.db.ExecContext(ctx,
 		`DELETE FROM preferences WHERE user_id = $1 AND key = $2`,
 		userID, key)
@@ -43,6 +64,9 @@ func (k *Karu) DeletePreference(ctx context.Context, userID, key string) error {
 }
 
 func (k *Karu) ListPreferences(ctx context.Context, userID string) (map[string]string, error) {
+	if err := validateLength("user_id", userID, MaxAuthorLength); err != nil {
+		return nil, err
+	}
 	rows, err := k.db.QueryContext(ctx,
 		`SELECT key, value FROM preferences WHERE user_id = $1`, userID)
 	if err != nil {
